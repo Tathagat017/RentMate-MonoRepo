@@ -2,6 +2,21 @@
 
 RentMate is a simulation platform for managing shared household expenses and chores. It simplifies roommate life by allowing users to track expenses, split bills, manage balances, and settle up efficiently.
 
+
+Landing
+![image](https://github.com/user-attachments/assets/715a01bc-fa6a-4153-905c-b980a2d33cee)
+
+
+Dashboard : 
+
+![image](https://github.com/user-attachments/assets/93bf2493-c4f4-4a41-bc2b-83748da3bdef)
+
+Household view : 
+
+![image](https://github.com/user-attachments/assets/e9e8fe0f-e4aa-41ed-bede-0cfccd465c96)
+
+
+
 ---
 
 ## 🚀 Features
@@ -90,6 +105,15 @@ npm run dev
 - **GET** `/:householdId/history` – Get full activity log for a household
 - **GET** `/:householdId/history/export` – Export activity log as CSV
 
+## 🗄️ MongoDB Atlas – Database Mapping
+
+**Cluster: `RentMateCluster`**
+
+Collections:
+- **users** – Stores user info, credentials (hashed), and roles
+- **households** – Contains household details, members, and invite codes
+- **chores** – Tracks household chores, status, and assignees
+- **expenses** – Stores all expenses, payers, participants, and amounts
 
 📊 Example Dashboard
 Balances: list & pie chart
