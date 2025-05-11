@@ -140,6 +140,33 @@ export class AuthStore {
     }
   }
 
+  async gerUserProfile(): Promise<User | null> {
+    try {
+      if (!this.token) {
+        throw new Error("No token found");
+      }
+      const res: AxiosResponse<User> = await axios.post(
+        `${this.baseUrl}/api/users/profile`,
+        {
+          userId: this.user?._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+      runInAction(() => {
+        this.user = res.data;
+        this.setAuth(this.token!, this.user, this.role);
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+  }
+
   clearStore() {
     this.logout();
   }

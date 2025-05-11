@@ -1,4 +1,4 @@
-import LandingPageBAckgroundImage from "../assets/images/landing_page_background.jpg";
+import LandingPageBAckgroundImage from "../assets/images/landing_page_background2.avif";
 import LoginBackgroundImage from "../assets/images/login_background.jpeg";
 import NotFoundImage from "../assets/images/not_found.webp";
 import RegisterBackgroundImage from "../assets/images/register_background.jpeg";

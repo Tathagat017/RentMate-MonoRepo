@@ -4,6 +4,7 @@ export class UiViewStore {
   _isCreateHouseHoldModalOpen = false;
   _isCreateChoreModalOpen = false;
   _isCreateExpenseModalOpen = false;
+  _isInviteMemberModalOpen = false;
   constructor() {
     makeAutoObservable(this);
   }
@@ -18,6 +19,10 @@ export class UiViewStore {
 
   get IsCreateExpenseModalOpen() {
     return this._isCreateExpenseModalOpen;
+  }
+
+  get IsInviteMemberModalOpen() {
+    return this._isInviteMemberModalOpen;
   }
 
   toggleCreateHouseHoldModal(value: boolean) {
@@ -35,6 +40,12 @@ export class UiViewStore {
   toggleCreateExpenseModal(value: boolean) {
     runInAction(() => {
       this._isCreateExpenseModalOpen = value;
+    });
+  }
+
+  toggleInviteMemberModal(value: boolean) {
+    runInAction(() => {
+      this._isInviteMemberModalOpen = value;
     });
   }
 

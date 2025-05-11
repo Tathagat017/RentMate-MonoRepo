@@ -11,7 +11,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../../hooks/use-store";
 import { getImage } from "../../utils/image-map";
 
@@ -50,6 +50,7 @@ const useStyles = createStyles((theme) => ({
 export const LoginComponent = observer(function LoginComponent() {
   const { authStore } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { classes, theme } = useStyles();
 
   const [email, setEmail] = useState("");
@@ -59,6 +60,8 @@ export const LoginComponent = observer(function LoginComponent() {
   const [passwordError, setPasswordError] = useState("");
 
   const backgroundImage = getImage("login_background");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   const validateEmail = (value: string) => {
     if (!value) return "Email is required";
@@ -90,7 +93,7 @@ export const LoginComponent = observer(function LoginComponent() {
         message: `Welcome, ${success.name}!`,
         color: "green",
       });
-      navigate(`/dashboard`);
+      navigate(from, { replace: true });
     } else {
       notifications.show({
         title: "Login failed",

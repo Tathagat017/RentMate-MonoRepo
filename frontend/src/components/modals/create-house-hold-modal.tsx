@@ -48,12 +48,24 @@ const CreateHouseHoldModal = observer(
       setLoading(false);
     };
 
-    const handleJoinHouseHold = () => {
-      notifications.show({
-        title: "Success",
-        message: "House hold joined!",
-        color: "green",
-      });
+    const handleJoinHouseHold = async () => {
+      setLoading(true);
+      const result = await householdStore.joinHousehold(joinCode);
+      if (result) {
+        notifications.show({
+          title: "Success",
+          message: "House hold joined!",
+          color: "green",
+        });
+        handleClose();
+      } else {
+        notifications.show({
+          title: "Error",
+          message: "Failed to join house hold",
+          color: "red",
+        });
+      }
+      setLoading(false);
     };
     return (
       <Modal
@@ -86,7 +98,7 @@ const CreateHouseHoldModal = observer(
         )}
 
         <div className={classes.footer}>
-          <Button onClick={handleClose} variant="light">
+          <Button onClick={handleClose} variant="light" h={25}>
             Cancel
           </Button>
           <Button
@@ -98,6 +110,7 @@ const CreateHouseHoldModal = observer(
               }
             }}
             loading={loading}
+            h={25}
           >
             {type === "create" ? "Create" : "Join"}
           </Button>

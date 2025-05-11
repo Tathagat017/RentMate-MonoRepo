@@ -7,6 +7,8 @@ const {
   sendBulkInvites,
   getUserHouseholds,
   getHouseHoldById,
+  removeSelfFromHousehold,
+  deleteHousehold,
 } = require("../controllers/householdController");
 const {
   AuthenticationHandler,
@@ -18,11 +20,17 @@ router.get("/:householdId", getHouseHoldById);
 router.post("/", AuthenticationHandler, createHousehold);
 router.post("/join", AuthenticationHandler, joinHousehold);
 router.post("/mine", AuthenticationHandler, getUserHouseholds);
-router.post("/:householdId/invite", AuthenticationHandler, sendInvite);
-router.post("/:householdId/invite/bulk", sendBulkInvites);
-router.delete(
-  "/:householdId/members/:userId",
+router.post("/single/:householdId/invite", AuthenticationHandler, sendInvite);
+router.post("/bulk/:householdId/invite", sendBulkInvites);
+router.post(
+  "/deleteMember/:householdId/members/:userId",
   AuthenticationHandler,
   removeMember
 );
+router.post(
+  "/selfRemove/:householdId",
+  AuthenticationHandler,
+  removeSelfFromHousehold
+);
+router.post("/delete/:householdId", AuthenticationHandler, deleteHousehold);
 module.exports = { householdRouter: router };

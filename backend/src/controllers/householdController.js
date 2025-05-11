@@ -64,22 +64,8 @@ const joinHousehold = asyncHandler(async (req, res) => {
 
 // @desc    Send invite email
 const sendInvite = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const household = await Household.findById(req.params.householdId);
-
-  if (!household.owner.equals(req.user._id)) {
-    res.status(403);
-    throw new Error("Only the owner can send invites");
-  }
-
-  await sendInviteEmail(email, household.inviteCode, household.name);
-  res.json({ success: true });
-});
-
-// @desc    Send bulk invites and update pendingInvites
-const sendBulkInvites = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
   const { householdId } = req.params;
-  const { invitees } = req.body;
 
   const household = await Household.findById(householdId);
   if (!household) {
@@ -92,23 +78,67 @@ const sendBulkInvites = asyncHandler(async (req, res) => {
     throw new Error("Only the owner can send invites");
   }
 
-  // Filter out existing members
+  if (
+    household.members.includes(userId) ||
+    household.pendingInvites.includes(userId)
+  ) {
+    res.status(200);
+    res.json({ success: true });
+    return;
+  }
+
+  const user = await User.findById(userId).select("email");
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  await sendInviteEmail(user.email, household.inviteCode, household.name);
+
+  household.pendingInvites.push(userId);
+  await household.save();
+
+  res.json({ success: true });
+});
+
+// @desc    Send bulk invites and update pendingInvites
+const sendBulkInvites = asyncHandler(async (req, res) => {
+  const { householdId } = req.params;
+  const { userIds: invitees } = req.body; // array of userIds
+
+  const household = await Household.findById(householdId);
+  if (!household) {
+    res.status(404);
+    throw new Error("Household not found");
+  }
+
+  if (!household.owner.equals(req.user._id)) {
+    res.status(403);
+    throw new Error("Only the owner can send invites");
+  }
+
   const filteredInvitees = invitees.filter(
-    (uid) => !household.members.includes(uid)
+    (uid) =>
+      !household.members.includes(uid) &&
+      !household.pendingInvites.includes(uid)
   );
 
-  // Add to pendingInvites
-  await Household.findByIdAndUpdate(householdId, {
-    $addToSet: { pendingInvites: { $each: filteredInvitees } },
-  });
-
-  // Send email to each invitee
-  for (const userId of filteredInvitees) {
-    const user = await User.findById(userId);
-    if (user?.email) {
-      await sendInviteEmail(user.email, household.inviteCode, household.name);
-    }
+  if (filteredInvitees.length === 0) {
+    return res.json({ success: true, invitedCount: 0 });
   }
+
+  const users = await User.find({ _id: { $in: filteredInvitees } }).select(
+    "email"
+  );
+
+  // Send invites
+  for (const user of users) {
+    await sendInviteEmail(user.email, household.inviteCode, household.name);
+  }
+
+  // Add to pendingInvites
+  household.pendingInvites.push(...filteredInvitees);
+  await household.save();
 
   res.json({ success: true, invitedCount: filteredInvitees.length });
 });
@@ -162,6 +192,60 @@ const getHouseHoldById = asyncHandler(async (req, res) => {
   res.json(household);
 });
 
+// @desc    Member removes themselves from a household
+// @route   DELETE /api/households/:householdId/leave
+// @access  Private
+const removeSelfFromHousehold = asyncHandler(async (req, res) => {
+  const { householdId } = req.params;
+  const userId = req.user._id;
+
+  const household = await Household.findById(householdId);
+  if (!household) {
+    res.status(404);
+    throw new Error("Household not found");
+  }
+
+  if (household.owner.equals(userId)) {
+    res.status(400);
+    throw new Error("Owner cannot leave the household");
+  }
+
+  if (!household.members.includes(userId)) {
+    res.status(400);
+    throw new Error("You are not a member of this household");
+  }
+
+  household.members = household.members.filter(
+    (memberId) => !memberId.equals(userId)
+  );
+
+  await household.save();
+
+  res.json({ success: true, message: "You have left the household" });
+});
+
+// @desc    Owner deletes the entire household
+// @route   DELETE /api/households/:householdId
+// @access  Private
+const deleteHousehold = asyncHandler(async (req, res) => {
+  const { householdId } = req.params;
+
+  const household = await Household.findById(householdId);
+  if (!household) {
+    res.status(404);
+    throw new Error("Household not found");
+  }
+
+  if (!household.owner.equals(req.user._id)) {
+    res.status(403);
+    throw new Error("Only the owner can delete the household");
+  }
+
+  await household.deleteOne();
+
+  res.json({ success: true, message: "Household deleted successfully" });
+});
+
 module.exports = {
   createHousehold,
   joinHousehold,
@@ -170,4 +254,6 @@ module.exports = {
   getUserHouseholds,
   sendBulkInvites,
   getHouseHoldById,
+  deleteHousehold,
+  removeSelfFromHousehold,
 };

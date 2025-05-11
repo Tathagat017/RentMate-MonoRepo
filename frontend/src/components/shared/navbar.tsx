@@ -6,15 +6,20 @@ import {
   createStyles,
   Drawer,
   Group,
+  Menu,
   Stack,
+  Text,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStore } from "../../hooks/use-store";
 import { getImage } from "../../utils/image-map";
+import { notifications } from "@mantine/notifications";
 
 const useStyles = createStyles((theme) => ({
   navbar: {
@@ -58,6 +63,10 @@ export const NavBar = observer(function NavBar() {
   ];
   const logoutLink = [
     {
+      label: "Dashboard",
+      href: "/dashboard",
+    },
+    {
       label: "Logout",
       href: "/",
     },
@@ -71,17 +80,33 @@ export const NavBar = observer(function NavBar() {
     <Button
       key={link.label}
       variant="white"
+      h={30}
       color={active === link.label ? "blue" : "gray"}
       onClick={() => {
-        setActive(link.label);
-        close();
-        navigate(link.href);
+        if (link.label === "Logout") {
+          authStore.logout();
+          navigate(link.href);
+        } else {
+          setActive(link.label);
+          close();
+          navigate(link.href);
+        }
       }}
       component="a"
     >
       {link.label}
     </Button>
   ));
+
+  const handleLogout = () => {
+    authStore.logout();
+    notifications.show({
+      title: "Logged out",
+      message: "You have been logged out",
+      color: "green",
+    });
+    navigate("/");
+  };
 
   return (
     <Container fluid px="md" py="sm" className={classes.navbar}>
@@ -100,7 +125,40 @@ export const NavBar = observer(function NavBar() {
       {!isMobile && (
         <Group spacing="md">
           {items}
-          {isLoggedIn && <Avatar size="md" radius="xl" />}
+          {isLoggedIn && (
+            <Menu position="bottom-end" shadow="md" withArrow withinPortal>
+              <Menu.Target>
+                <Avatar
+                  radius="xl"
+                  size="md"
+                  src={authStore.User?.profilePictureUrl || undefined}
+                  style={{ cursor: "pointer" }}
+                >
+                  {authStore.User?.name?.charAt(0) || "U"}
+                </Avatar>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item>
+                  <Stack spacing={0}>
+                    <Text size="sm" weight={500}>
+                      {authStore.User?.name}
+                    </Text>
+                    <Text size="xs" color="dimmed">
+                      {authStore.User?.email}
+                    </Text>
+                  </Stack>
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  color="red"
+                  icon={<FontAwesomeIcon icon={faSignOutAlt} />}
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
         </Group>
       )}
 
@@ -118,16 +176,32 @@ export const NavBar = observer(function NavBar() {
           >
             <Stack spacing="md" align="center">
               {isLoggedIn && (
-                <Avatar color="blue" radius="xl">
-                  {authStore.User != null ? (
-                    <img
-                      src={authStore.User?.profilePictureUrl}
-                      alt="Profile"
-                    />
-                  ) : (
-                    "A"
-                  )}
-                </Avatar>
+                <Menu position="bottom-end" shadow="md">
+                  <Menu.Target>
+                    <Avatar
+                      radius="xl"
+                      size="md"
+                      src={authStore.User?.profilePictureUrl || undefined}
+                    >
+                      {authStore.User?.name?.charAt(0) || "U"}
+                    </Avatar>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item>
+                      <Text size="sm" color="dimmed">
+                        {authStore.User?.email}
+                      </Text>
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item
+                      color="red"
+                      icon={<FontAwesomeIcon icon={faSignOutAlt} />}
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
               )}
               {items}
             </Stack>

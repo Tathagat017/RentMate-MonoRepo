@@ -12,10 +12,10 @@ const {
 const router = express.Router();
 
 router.post("/", AuthenticationHandler, createExpense);
-router.get("/:householdId", AuthenticationHandler, getExpenses);
-router.get("/:householdId/balances", AuthenticationHandler, getBalances);
+router.get("/expense/:householdId", AuthenticationHandler, getExpenses);
+router.get("/balance/:householdId", AuthenticationHandler, getBalances);
 router.get(
-  "/:householdId/settle-up",
+  "/settle-up/:householdId",
   AuthenticationHandler,
   getSettleUpSuggestions
 );

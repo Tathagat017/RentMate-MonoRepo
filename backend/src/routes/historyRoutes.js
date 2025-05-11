@@ -5,8 +5,8 @@ const {
   exportHistoryToCSV,
 } = require("../controllers/historyController");
 
-router.get("/:householdId/history", getHistory);
+router.get("/previous/:householdId", getHistory);
 
-router.get("/:householdId/history/export", exportHistoryToCSV);
+router.get("/export/:householdId", exportHistoryToCSV);
 
 module.exports = { historyRouter: router };

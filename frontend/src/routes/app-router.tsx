@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SuspenseLoader from "../components/suspense-loader";
 import { Layout } from "../components/layouts/layout";
 import { AuthenticatedRoute } from "./authenticated-route";
+import { JoinHouseholdPage } from "../pages/protected/join-household-invite";
 
 // Public Pages
 const LandingPage = lazy(() => import("../pages/public/landing"));
@@ -32,7 +33,14 @@ export const AppRouter: React.FC = () => (
             </AuthenticatedRoute>
           }
         >
-          {/* Shared Auth */}
+          <Route
+            path="/join"
+            element={
+              <AuthenticatedRoute>
+                <JoinHouseholdPage />
+              </AuthenticatedRoute>
+            }
+          />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/households/:id" element={<Household />} />
         </Route>

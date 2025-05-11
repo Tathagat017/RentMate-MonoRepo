@@ -69,7 +69,7 @@ const HouseHoldCardListDashboard = observer(() => {
 
             <Stack spacing={4}>
               <Text size="sm" c="dimmed">
-                Owner: {getOwnerName(household.owner.toString())}
+                Owner: {getOwnerName(household.owner._id.toString())}
               </Text>
               <Text size="sm">Members: {household.members.length}</Text>
               <Text size="sm">

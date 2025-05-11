@@ -2,7 +2,7 @@ import { Title, Text, Button, Stack, Flex } from "@mantine/core";
 import { observer } from "mobx-react-lite";
 import { getImage } from "../../utils/image-map";
 import { useStore } from "../../hooks/use-store";
-import CreateHouseHoldModal from "./create-house-hold-modal";
+import CreateHouseHoldModal from "../modals/create-house-hold-modal";
 import { useState } from "react";
 
 const NoHouseHoldDashboard = observer(() => {

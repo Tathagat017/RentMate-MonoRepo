@@ -24,7 +24,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
 import { observer } from "mobx-react-lite";
 import { Types } from "mongoose";
-import { useState } from "react";
 import { useStore } from "../../hooks/use-store";
 import { Chore } from "../../types/chore";
 import CreateChoreModal from "../modals/create-chore-modal";
@@ -34,19 +33,13 @@ import CreateChoreModal from "../modals/create-chore-modal";
 const ChoresTab = observer(({ householdId }: { householdId: string }) => {
   const { choreStore, authStore, uiViewStore } = useStore();
 
-  const [chores, setChores] = useState<Chore[]>([]);
-  const { isLoading } = useQuery({
+  const { data: chores, isLoading } = useQuery({
     queryKey: ["chores"],
     queryFn: async () => {
       const result = await choreStore.getAllChoresByHouseholdId(
         householdId as unknown as Types.ObjectId
       );
       return result;
-    },
-    onSuccess: (data) => {
-      if (data) {
-        setChores(data);
-      }
     },
   });
 
@@ -102,10 +95,10 @@ const ChoresTab = observer(({ householdId }: { householdId: string }) => {
       <Stack>
         {isLoading ? (
           <Text>Loading chores...</Text>
-        ) : chores.length === 0 ? (
+        ) : (chores && chores.length === 0 && !isLoading) || !chores ? (
           <Text>No chores yet. Start by creating one.</Text>
         ) : (
-          chores.map((chore: Chore) => (
+          chores?.map((chore: Chore) => (
             <Paper
               key={chore._id.toString()}
               withBorder
@@ -119,7 +112,8 @@ const ChoresTab = observer(({ householdId }: { householdId: string }) => {
                   <Group spacing="xs" mt="xs">
                     {chore.assignedTo && (
                       <Badge leftSection={<FontAwesomeIcon icon={faUser} />}>
-                        {assigneeName(chore.assignedTo.toString())}
+                        Assigned to:{" "}
+                        {assigneeName(chore.assignedTo._id.toString())}
                       </Badge>
                     )}
                     <Badge leftSection={<FontAwesomeIcon icon={faRedo} />}>

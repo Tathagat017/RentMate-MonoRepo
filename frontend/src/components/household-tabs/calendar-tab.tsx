@@ -29,7 +29,16 @@ const CalendarTab = observer(function CalendarTab({
         Calendar
       </Title>
       {isLoading ? (
-        <Loader />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <Loader />
+        </div>
       ) : (
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
@@ -37,6 +46,21 @@ const CalendarTab = observer(function CalendarTab({
           events={data ?? []}
           height="auto"
           eventDisplay="block"
+          displayEventTime={false}
+          eventContent={(eventInfo) => {
+            return (
+              <div style={{ padding: "2px" }}>
+                <div style={{ fontWeight: "bold" }}>
+                  {eventInfo.event.title}
+                </div>
+                {eventInfo.event.extendedProps.description && (
+                  <div style={{ fontSize: "0.9em" }}>
+                    {eventInfo.event.extendedProps.description}
+                  </div>
+                )}
+              </div>
+            );
+          }}
           headerToolbar={{
             start: "prev,next today",
             center: "title",

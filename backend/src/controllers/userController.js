@@ -15,7 +15,7 @@ const allUsers = asyncHandler(async (req, res) => {
       }
     : {};
 
-  const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+  const users = await User.find(keyword);
   res.send(users);
 });
 
@@ -23,7 +23,7 @@ const allUsers = asyncHandler(async (req, res) => {
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, pic } = req.body;
+  const { name, email, password, profilePictureUrl } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);
@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
-    pic,
+    profilePictureUrl,
   });
 
   if (user) {
@@ -50,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       households: [],
-      profilePictureUrl: user.pic,
+      profilePictureUrl: user.profilePictureUrl,
       token: generateToken(user._id, user.name),
     });
   } else {
@@ -82,4 +82,18 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { allUsers, registerUser, loginUser };
+// @desc    Get user profile
+// @route   GET /api/users/profile
+// @access  Private
+const getProfile = asyncHandler(async (req, res) => {
+  res.json({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    profilePictureUrl: req.user.profilePictureUrl,
+    households: req.user.households,
+    token: generateToken(req.user._id, req.user.name),
+  });
+});
+
+module.exports = { allUsers, registerUser, loginUser, getProfile };
