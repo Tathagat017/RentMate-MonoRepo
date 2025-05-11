@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import { NavBar } from "../shared/navbar";
-import EditStartUpProfileModal from "../shared/edit-startup-profile-modal";
 
 export const Layout = () => (
   <>

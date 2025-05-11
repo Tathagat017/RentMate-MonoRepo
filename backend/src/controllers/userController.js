@@ -50,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       households: [],
-      pic: user.pic,
+      profilePictureUrl: user.pic,
       token: generateToken(user._id, user.name),
     });
   } else {
@@ -72,7 +72,7 @@ const loginUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      pic: user.profilePictureUrl,
+      profilePictureUrl: user.profilePictureUrl,
       households: user.households,
       token: generateToken(user._id, user.name),
     });

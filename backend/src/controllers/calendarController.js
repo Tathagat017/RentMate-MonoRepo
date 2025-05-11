@@ -6,7 +6,7 @@ const getCalendarEvents = asyncHandler(async (req, res) => {
   const { householdId } = req.params;
 
   const expenses = await Expense.find({ householdId });
-
+  const now = new Date();
   const chores = await Chore.find({ householdId });
   for (const chore of chores) {
     const wasOverdue = chore.isOverDue;

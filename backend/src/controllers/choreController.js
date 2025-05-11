@@ -5,22 +5,26 @@ const Household = require("../models/houseHoldModel");
 // Create a new chore
 // Create a new chore
 const createChore = asyncHandler(async (req, res) => {
-  const { name, frequency, householdId } = req.body;
+  const { name, frequency, householdId, assignedTo, dueDate } = req.body;
 
   const household = await Household.findById(householdId).populate("members");
   if (!household) throw new Error("Household not found");
 
-  const firstAssignee = household.members[0];
+  const firstAssignee = assignedTo ?? household.members[0] ?? req.user;
 
   const now = new Date();
-  const dueDate = new Date(now);
+  const lastDate = new Date(now);
 
   if (frequency === "daily") {
-    dueDate.setDate(now.getDate() + 1);
+    lastDate.setDate(now.getDate() + 1);
   } else if (frequency === "weekly") {
-    dueDate.setDate(now.getDate() + 7);
+    lastDate.setDate(now.getDate() + 7);
   } else if (frequency === "monthly") {
-    dueDate.setMonth(now.getMonth() + 1);
+    lastDate.setMonth(now.getMonth() + 1);
+  }
+
+  if (dueDate) {
+    lastDate.setTime(new Date(dueDate).getTime());
   }
 
   const chore = await Chore.create({
@@ -29,7 +33,7 @@ const createChore = asyncHandler(async (req, res) => {
     householdId,
     assignedTo: firstAssignee._id,
     rotationIndex: 0,
-    dueDate,
+    dueDate: lastDate,
     isOverDue: false,
   });
 
@@ -70,6 +74,7 @@ const completeChore = asyncHandler(async (req, res) => {
   const household = await Household.findById(chore.householdId).populate(
     "members"
   );
+  const now = new Date();
   const members = household.members;
   const wasMissed = chore.dueDate < now;
 
@@ -91,12 +96,25 @@ const completeChore = asyncHandler(async (req, res) => {
   chore.dueDate = newDueDate;
   chore.isOverDue = false;
   // Rotate to next member
+  if (members.length === 1 || members.length === 0) {
+    chore.assignedTo = req.user._id;
+    chore.rotationIndex = 0;
+    await chore.save();
+    res.json({ success: true });
+    return;
+  }
   const nextIndex = (chore.rotationIndex + 1) % members.length;
-  chore.assignedTo = members[nextIndex]._id;
+  chore.assignedTo = members[nextIndex]._id ?? req.user._id;
   chore.rotationIndex = nextIndex;
 
   await chore.save();
   res.json({ success: true });
 });
 
-module.exports = { createChore, getChores, completeChore };
+const getChoreById = asyncHandler(async (req, res) => {
+  const { choreId } = req.params;
+  const chore = await Chore.findById(choreId);
+  res.json(chore);
+});
+
+module.exports = { createChore, getChores, completeChore, getChoreById };
